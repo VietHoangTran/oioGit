@@ -97,12 +97,6 @@ Replace TYPE(SCOPE): DESCRIPTION with your generated message.
 - **Focus on WHAT changed, not HOW** it was implemented
 - **Be concise but descriptive** - anyone should understand the change
 
-**CRITICAL - NEVER include AI attribution:**
-- ❌ "🤖 Generated with [Claude Code]"
-- ❌ "Co-Authored-By: Claude <noreply@anthropic.com>"
-- ❌ "AI-assisted commit"
-- ❌ Any AI tool attribution, signature, or reference
-
 **Good examples:**
 - `feat(auth): add user login validation`
 - `fix(api): resolve timeout in database queries`
