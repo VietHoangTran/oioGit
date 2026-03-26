@@ -138,7 +138,8 @@ extension RepoMonitorService {
     // MARK: - Notification Evaluation
 
     private func evaluateNotifications(for state: RepoState) {
-        let name = state.displayName
+        let repoKey = state.id // unique path, not displayName
+        let repoName = state.displayName
         let notifier = NotificationService.shared
         let defaults = UserDefaults.standard
 
@@ -153,10 +154,16 @@ extension RepoMonitorService {
         if state.currentBranch == "HEAD (detached)" {
             current.insert(NotificationType.detachedHead.rawValue)
         }
+        // Stale: uncommitted changes older than 2 hours
+        if !state.gitStatus.isClean,
+           let updated = state.lastUpdated,
+           Date().timeIntervalSince(updated) > 7200
+        {
+            current.insert(NotificationType.staleChanges.rawValue)
+        }
 
-        let previous = activeNotifications[name] ?? []
+        let previous = activeNotifications[repoKey] ?? []
 
-        // Only notify on new transitions (false→true) & respect prefs
         for typeStr in current.subtracting(previous) {
             guard let type = NotificationType(rawValue: typeStr),
                   defaults.bool(forKey: "notify_\(typeStr)")
@@ -165,15 +172,14 @@ extension RepoMonitorService {
             let msg = type == .behindRemote
                 ? "\(state.behindCount) commit(s) behind remote"
                 : nil
-            notifier.send(type: type, repoName: name, message: msg)
+            notifier.send(type: type, repoName: repoName, message: msg)
         }
 
-        // Remove cleared notifications
         for typeStr in previous.subtracting(current) {
             guard let type = NotificationType(rawValue: typeStr) else { continue }
-            notifier.removeNotification(repoName: name, type: type)
+            notifier.removeNotification(repoName: repoName, type: type)
         }
 
-        activeNotifications[name] = current
+        activeNotifications[repoKey] = current
     }
 }

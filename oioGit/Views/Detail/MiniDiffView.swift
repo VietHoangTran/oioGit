@@ -9,7 +9,7 @@ struct MiniDiffView: View {
     @State private var isLoading = true
     @State private var errorMessage: String?
 
-    private let gitRunner = GitCommandRunner()
+    private let gitRunner = GitCommandRunner.shared
 
     var body: some View {
         Group {

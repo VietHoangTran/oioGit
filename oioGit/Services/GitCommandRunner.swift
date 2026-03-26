@@ -17,6 +17,9 @@ enum GitError: LocalizedError {
 }
 
 final class GitCommandRunner: Sendable {
+    /// Shared instance for views to avoid per-view allocation
+    static let shared = GitCommandRunner()
+
     private let gitPath: String
     private let timeout: TimeInterval
     private let queue = DispatchQueue(label: "com.oioGit.git", qos: .utility)

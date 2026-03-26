@@ -64,7 +64,7 @@ struct DashboardView: View {
             }
             .buttonStyle(.borderless)
 
-            Button(action: openSettings) {
+            SettingsLink {
                 Image(systemName: "gear")
             }
             .buttonStyle(.borderless)
@@ -104,11 +104,16 @@ struct DashboardView: View {
         ScrollView {
             LazyVStack(spacing: 4) {
                 ForEach(viewModel.repoStates) { state in
-                    RepoCardView(repoState: state)
-                        .onTapGesture { selectedRepo = state }
-                        .contextMenu {
-                            repoContextMenu(for: state)
-                        }
+                    RepoCardView(repoState: state) {
+                        viewModel.removeRepo(
+                            repoId: state.id, modelContext: modelContext,
+                            configs: repoConfigs
+                        )
+                    }
+                    .onTapGesture { selectedRepo = state }
+                    .contextMenu {
+                        repoContextMenu(for: state)
+                    }
                 }
             }
             .padding(8)
@@ -154,18 +159,6 @@ struct DashboardView: View {
             )
         } catch {
             viewModel.errorMessage = error.localizedDescription
-        }
-    }
-
-    private func openSettings() {
-        if #available(macOS 14, *) {
-            NSApp.sendAction(
-                Selector(("showSettingsWindow:")), to: nil, from: nil
-            )
-        } else {
-            NSApp.sendAction(
-                Selector(("showPreferencesWindow:")), to: nil, from: nil
-            )
         }
     }
 }

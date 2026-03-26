@@ -10,7 +10,7 @@ struct RepoDetailView: View {
     @State private var branches: [BranchInfo] = []
     @State private var isLoading = true
 
-    private let gitRunner = GitCommandRunner()
+    private let gitRunner = GitCommandRunner.shared
 
     var body: some View {
         VStack(spacing: 0) {

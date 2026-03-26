@@ -2,6 +2,9 @@ import SwiftUI
 
 struct RepoCardView: View {
     let repoState: RepoState
+    var onRemove: (() -> Void)?
+
+    @State private var isHovering = false
 
     var body: some View {
         HStack(spacing: 10) {
@@ -22,7 +25,15 @@ struct RepoCardView: View {
 
             Spacer()
 
-            if repoState.isScanning {
+            if isHovering, let onRemove {
+                Button(action: onRemove) {
+                    Image(systemName: SFSymbols.remove)
+                        .font(.caption)
+                        .foregroundStyle(.red)
+                }
+                .buttonStyle(.borderless)
+                .help("Remove repository")
+            } else if repoState.isScanning {
                 ProgressView()
                     .controlSize(.small)
             } else if let updated = repoState.lastUpdated {
@@ -38,6 +49,7 @@ struct RepoCardView: View {
                 .fill(.quaternary.opacity(0.5))
         )
         .contentShape(Rectangle())
+        .onHover { isHovering = $0 }
     }
 
     private var branchLabel: some View {
