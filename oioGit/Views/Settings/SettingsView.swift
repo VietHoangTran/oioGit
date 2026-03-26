@@ -18,7 +18,12 @@ struct SettingsView: View {
                 .tabItem {
                     Label("Notifications", systemImage: "bell")
                 }
+
+            GitHubAccountSettingsView()
+                .tabItem {
+                    Label("GitHub", systemImage: "person.circle")
+                }
         }
-        .frame(width: 450, height: 320)
+        .frame(width: 450, height: 380)
     }
 }

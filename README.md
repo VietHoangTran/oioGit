@@ -148,7 +148,7 @@ See [docs/code-standards.md](docs/code-standards.md) for full guidelines.
 
 **v1.0 — Production Ready**
 
-All planned phases complete (Phase 5 at 60% — global hotkey and inline diff implemented; WidgetKit and GitHub CI intentionally deferred per YAGNI).
+All planned phases complete (Phase 5 now 100% — global hotkey, GitHub CI/CD, widgets all implemented).
 
 Key features delivered:
 - Real-time menu bar Git status for up to 15 repos
@@ -156,7 +156,9 @@ Key features delivered:
 - Detail view: changed files, commit log, branch list, inline diff
 - macOS notifications for conflicts, behind-remote, detached HEAD
 - Full settings panel with launch-at-login, polling config, IDE selection
-- Global hotkey ⌃⇧G to toggle popover from any app
+- Customizable global hotkey to toggle popover from any app
+- GitHub CI/CD status badges on repo cards
+- macOS desktop widget (small + medium) for at-a-glance repo status
 
 ---
 

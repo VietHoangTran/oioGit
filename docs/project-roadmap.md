@@ -21,7 +21,7 @@ oioGit is a native macOS menu bar application for monitoring Git repositories at
 | 2 | File Monitoring & Auto-Refresh | ✅ Complete | 100% | DispatchSource file watchers, efficient state updates |
 | 3 | Notifications & Detail View | ✅ Complete | 100% | Rich notifications, detail view with tabs, quick actions |
 | 4 | Polish, Settings & Groups | ✅ Complete | 100% | Full settings panel, repo groups/aliases, launch at login |
-| 5 | Advanced Features | ⚠️ Partial | 60% | Global hotkeys & diffs implemented; widgets & GitHub CI deferred |
+| 5 | Advanced Features | ✅ Complete | 100% | Hotkeys, CI/CD, widgets all implemented |
 
 ---
 
@@ -102,24 +102,22 @@ oioGit is a native macOS menu bar application for monitoring Git repositories at
 
 ---
 
-### Phase 5: Advanced Features (Partial - 60% Complete)
+### Phase 5: Advanced Features (100% Complete)
 
 **Objective**: Add power-user features and integration capabilities
 
 **Completed Deliverables**:
-- [x] Global keyboard shortcut (⌃⇧G default) to toggle popover from anywhere
-- [x] Hotkey configuration UI in settings
+- [x] Custom hotkey recorder — users can configure any keyboard shortcut
+- [x] Global keyboard shortcut to toggle popover from anywhere
+- [x] Hotkey configuration UI in Settings with conflict detection
+- [x] GitHub token management — secure Keychain storage via Security framework
+- [x] GitHub API integration — fetches CI/CD status from GitHub Actions
+- [x] CI/CD status badges — color-coded indicators on repo cards
+- [x] macOS desktop widget — WidgetKit extension (small/medium sizes)
 - [x] Inline MiniDiffView for modified files with syntax highlighting
 - [x] Diff toggle in Changed Files tab (staged/unstaged diffs)
 
-**Deferred Deliverables** (YAGNI - not immediately needed):
-- [ ] macOS desktop widget (WidgetKit)
-- [ ] GitHub API integration for CI/CD status
-- [ ] GitHub token management in Keychain
-- [ ] CI/CD status badges on repos
-- [ ] Custom hotkey recorder
-
-**Impact**: Power users can invoke app globally; detailed diff inspection available for code review
+**Impact**: Power users can invoke app globally; detailed diff inspection available; CI status at a glance; desktop widget for quick access.
 
 ---
 

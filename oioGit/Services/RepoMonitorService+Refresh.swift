@@ -47,6 +47,9 @@ extension RepoMonitorService {
         }
 
         state.isScanning = false
+
+        // Update widget data after each refresh
+        SharedDataService.writeSnapshots(repoStates)
     }
 
     // MARK: - File Watchers
@@ -118,6 +121,9 @@ extension RepoMonitorService {
             if hasBookmark { url.stopAccessingSecurityScopedResource() }
             await fetchAheadBehind(state, at: url)
         }
+
+        // Piggyback CI/CD status fetch on periodic remote fetch
+        await fetchAllCIStatuses()
     }
 
     private func fetchAheadBehind(_ state: RepoState, at url: URL) async {

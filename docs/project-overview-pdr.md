@@ -96,6 +96,48 @@ Separate `Settings` scene window with three tabs:
 
 `MiniDiffView` renders unified diff output for any changed file. Accessible from the Changed Files tab in the detail view.
 
+### 10. Custom Hotkey Recorder
+
+Users can configure their own global keyboard shortcut in Settings > General > Keyboard Shortcut. `HotkeyRecorderView` captures key combinations, validates modifier keys (Control/Option/Command), detects conflicts with known macOS system shortcuts, and saves to UserDefaults. `GlobalHotkeyService` reads the dynamic hotkey from `AppSettings.shared`.
+
+### 11. GitHub Token Management (Keychain)
+
+`KeychainService` wraps the macOS Security framework for secure token storage. The GitHub tab in Settings provides:
+- SecureField for PAT entry (never logged or displayed after save)
+- Validate button to test token via GitHub API (`/user` endpoint)
+- Masked display (`ghp_...xxxx`) showing first 4 and last 4 chars
+- Delete button with confirmation
+
+Token is stored in Keychain with service `com.oioGit.github` and account `github-pat`.
+
+### 12. GitHub API Integration for CI/CD Status
+
+`GitHubAPIService` fetches the latest GitHub Actions workflow run for repos with GitHub remotes:
+- Parses remote URLs (HTTPS and SSH formats) via `GitHubRemoteParser`
+- Polls on configurable interval (1/5/15 min) during periodic fetch
+- Updates `RepoState.ciStatus` with state (success/failure/pending/running/none)
+- Gracefully handles rate limiting, unauthorized tokens, and private repo access
+
+### 13. CI/CD Status Badges
+
+`CIStatusBadgeView` displays a color-coded indicator on each repo card:
+- Green checkmark = success
+- Red X = failure
+- Yellow clock = running
+- Gray = pending
+
+`CIStatusDetailView` in repo detail header shows workflow name, status, last run time, and a link to open the workflow run in GitHub.
+
+### 14. macOS Desktop Widget (WidgetKit)
+
+`oioGitWidget` extension provides two widget sizes:
+- Small (1 repo): Shows repo name, branch, status dot, changed count
+- Medium (3-4 repos): Compact list with name, branch, status per row
+
+Data shared via App Group `group.com.oioGit.shared`:
+- `SharedDataService.writeSnapshots()` encodes repo states to JSON and writes to shared UserDefaults
+- `RepoStatusTimelineProvider` reads snapshots and creates 15-min refresh timeline
+
 ---
 
 ## Technical Requirements
@@ -202,7 +244,7 @@ Separate `Settings` scene window with three tabs:
 
 ## Current State (v1.0)
 
-All five phases implemented:
+All five phases implemented and complete:
 
 | Phase | Title | Status |
 |---|---|---|
@@ -210,9 +252,9 @@ All five phases implemented:
 | 2 | File Monitoring & Auto-Refresh | Complete (100%) |
 | 3 | Notifications & Detail View | Complete (100%) |
 | 4 | Polish, Settings & Groups | Complete (100%) |
-| 5 | Advanced Features | Partial (60%) — hotkey + diff done; widgets + GitHub CI deferred |
+| 5 | Advanced Features | Complete (100%) — hotkey, CI/CD, widgets all implemented |
 
-Codebase: ~2,490 LOC across 26 Swift source files. Zero third-party dependencies.
+Codebase: ~3,770 LOC across 33 Swift source files. Zero third-party dependencies.
 
 ---
 

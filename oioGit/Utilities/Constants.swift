@@ -29,3 +29,22 @@ enum StatusColor {
     static let conflict = Color.red
     static let unknown = Color.gray
 }
+
+nonisolated enum HotkeyDefaults: Sendable {
+    /// Known macOS system shortcuts that should trigger a conflict warning
+    static let systemConflicts: Set<String> = [
+        "Command+Q", "Command+W", "Command+H", "Command+M",
+        "Command+Tab", "Command+Space", "Command+Shift+3",
+        "Command+Shift+4", "Command+Shift+5",
+    ]
+}
+
+nonisolated enum KeychainConstants: Sendable {
+    static let service = "com.oioGit.github"
+    static let account = "github-pat"
+}
+
+nonisolated enum CIDefaults: Sendable {
+    static let pollingInterval: TimeInterval = 300
+    static let githubAPIBase = "https://api.github.com"
+}

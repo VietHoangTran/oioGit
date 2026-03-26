@@ -35,15 +35,24 @@ oioGitApp (@main)
 ├── MenuBarExtra (.window style)
 │   └── DashboardView
 │       ├── DashboardViewModel (@State) → RepoMonitorService
-│       ├── RepoCardView (×N) → StatusBadgeView
+│       ├── RepoCardView (×N) → StatusBadgeView, CIStatusBadgeView
 │       └── RepoDetailView (pushed on tap)
+│           ├── CIStatusDetailView
 │           ├── ChangedFilesView → MiniDiffView
 │           ├── CommitLogView
 │           └── BranchListView
 └── Settings scene → SettingsView (TabView)
-    ├── GeneralSettingsView
+    ├── GeneralSettingsView → HotkeyRecorderView
     ├── RepoManagerView
-    └── NotificationSettingsView
+    ├── NotificationSettingsView
+    └── GitHubAccountSettingsView
+
+oioGitWidget (Widget Extension)
+├── RepoStatusWidget
+│   ├── SmallRepoWidgetView (.systemSmall)
+│   └── MediumRepoWidgetView (.systemMedium)
+└── RepoStatusTimelineProvider
+    └── SharedDataReader (App Group UserDefaults)
 ```
 
 ---
@@ -84,10 +93,13 @@ DashboardViewModel: validate .git dir, check duplicate, check max-repo limit
 |---|---|
 | `GitCommandRunner` | `Process` API on private serial queue; timeout via racing `withThrowingTaskGroup` tasks; 5 s default / 30 s fetch instance |
 | `FileWatcherService` | `@unchecked Sendable`; `O_EVTONLY` fd on `.git`; `DispatchSourceFileSystemObject` `.write` events; 1 s debounce |
-| `RepoMonitorService` | `@Observable` orchestrator split across main file + `+Refresh` extension; transition-based notification evaluation via `activeNotifications: [String: Set<String>]` |
+| `RepoMonitorService` | `@Observable` orchestrator split across main file + `+Refresh` + `+CI` extensions; transition-based notification evaluation via `activeNotifications: [String: Set<String>]` |
 | `NotificationService` | Singleton; `UNUserNotificationCenter`; IDs `"\(repoName).\(type.rawValue)"` deduplicate sends |
-| `GlobalHotkeyService` | Singleton; `NSEvent.addGlobalMonitorForEvents`; `Control+Shift+G` via `kVK_ANSI_G` |
-| `AppSettings` | `@Observable` singleton; `UserDefaults`-backed; `launchAtLogin` delegates to `SMAppService` |
+| `GlobalHotkeyService` | Singleton; `NSEvent.addGlobalMonitorForEvents`; dynamic hotkey from `AppSettings` via `reregister()` |
+| `AppSettings` | `@Observable` singleton; `UserDefaults`-backed; hotkey/CI props; `launchAtLogin` delegates to `SMAppService` |
+| `KeychainService` | Security framework wrapper; `SecItemAdd/CopyMatching/Delete`; stores GitHub PAT in Keychain; no async (fast sync ops) |
+| `GitHubAPIService` | URLSession-based client; fetches latest workflow run for owner/repo; handles 401/403/404; 10 s timeout |
+| `SharedDataService` | Writes repo snapshots JSON to App Group UserDefaults; calls `WidgetCenter.shared.reloadAllTimelines()` |
 
 ---
 

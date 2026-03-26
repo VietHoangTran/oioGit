@@ -15,6 +15,7 @@ struct RepoDetailView: View {
     var body: some View {
         VStack(spacing: 0) {
             headerView
+            CIStatusDetailView(status: repoState.ciStatus)
             Divider()
             tabPicker
             Divider()

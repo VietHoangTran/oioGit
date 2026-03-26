@@ -10,6 +10,7 @@ final class RepoState: Identifiable {
     var behindCount: Int
     var stashCount: Int
     var lastUpdated: Date?
+    var ciStatus: CIStatus
     var isScanning: Bool
     var errorMessage: String?
 
@@ -21,6 +22,7 @@ final class RepoState: Identifiable {
         self.aheadCount = 0
         self.behindCount = 0
         self.stashCount = 0
+        self.ciStatus = .none
         self.lastUpdated = nil
         self.isScanning = false
         self.errorMessage = nil

@@ -52,6 +52,22 @@ struct GeneralSettingsView: View {
                 Toggle("Launch at login", isOn: $settings.launchAtLogin)
             }
 
+            Section("Keyboard Shortcut") {
+                HotkeyRecorderView()
+            }
+
+            Section("CI/CD Status") {
+                Toggle("Show CI/CD status", isOn: $settings.ciStatusEnabled)
+
+                if settings.ciStatusEnabled {
+                    Picker("CI polling interval", selection: $settings.ciPollingInterval) {
+                        Text("1 minute").tag(TimeInterval(60))
+                        Text("5 minutes").tag(TimeInterval(300))
+                        Text("15 minutes").tag(TimeInterval(900))
+                    }
+                }
+            }
+
             Section("Limits") {
                 Stepper(
                     "Max repositories: \(settings.maxRepoCount)",

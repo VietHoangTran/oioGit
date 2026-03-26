@@ -1,7 +1,7 @@
 import AppKit
 import Carbon.HIToolbox
 
-/// Registers a global keyboard shortcut (default: Control+Shift+G)
+/// Registers a global keyboard shortcut (configurable, default: Control+Shift+G)
 /// to toggle the menu bar popover.
 final class GlobalHotkeyService {
     static let shared = GlobalHotkeyService()
@@ -29,13 +29,15 @@ final class GlobalHotkeyService {
         }
     }
 
-    private func handleKeyEvent(_ event: NSEvent) {
-        // Control + Shift + G
-        let requiredFlags: NSEvent.ModifierFlags = [.control, .shift]
-        let hasFlags = event.modifierFlags.contains(requiredFlags)
-        let isG = event.keyCode == UInt16(kVK_ANSI_G)
+    /// Re-register with updated hotkey from AppSettings
+    func reregister() {
+        guard let callback = onToggle else { return }
+        register(onToggle: callback)
+    }
 
-        if hasFlags && isG {
+    private func handleKeyEvent(_ event: NSEvent) {
+        let config = AppSettings.shared.hotkeyConfig
+        if config.matches(event) {
             DispatchQueue.main.async { [weak self] in
                 self?.onToggle?()
             }

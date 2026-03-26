@@ -20,6 +20,7 @@ struct RepoCardView: View {
                     statusLabel
                     aheadBehindLabel
                     stashLabel
+                    CIStatusBadgeView(status: repoState.ciStatus)
                 }
             }
 
