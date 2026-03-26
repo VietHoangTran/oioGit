@@ -1,188 +1,214 @@
 # oioGit — System Architecture
 
-**Version**: 0.1.0
-**Last Updated**: 2026-03-25
-**Status**: Planned — no implementation beyond scaffold
+**Version**: 0.5.0 (Phases 1–5)
+**Last Updated**: 2026-03-26
+**Platform**: macOS 14+ — menu bar app (NOT iOS)
 
 ---
 
 ## Overview
 
-oioGit is a single-target SwiftUI iOS application. It follows the **MVVM** (Model-View-ViewModel) pattern, which aligns naturally with SwiftUI's reactive data-binding model. The architecture is designed to remain simple at early stages and scale incrementally as features are added.
+oioGit is a native macOS menu bar application that monitors multiple local Git repositories in the background. It uses **MVVM with `@Observable`** (Swift 5.9 Observation framework), SwiftData for persistence, and Apple-only system frameworks for all I/O.
+
+The app has no Dock icon (`NSApp.setActivationPolicy(.accessory)`). UI is exposed exclusively via a `MenuBarExtra` popover and a `Settings` window.
 
 ---
 
-## Architectural Pattern: MVVM
+## Architectural Pattern: MVVM + @Observable
 
 ```
-┌─────────────────────────────────────────────┐
-│                   View Layer                │
-│  SwiftUI Views (ContentView, RepositoryView)│
-│  Purely presentational, no business logic   │
-└────────────────┬────────────────────────────┘
-                 │ @StateObject / @ObservedObject
-                 ▼
-┌─────────────────────────────────────────────┐
-│               ViewModel Layer               │
-│  @MainActor ObservableObject classes        │
-│  Orchestrates data loading, user actions    │
-│  Exposes @Published state to views          │
-└────────────────┬────────────────────────────┘
-                 │ async/await calls
-                 ▼
-┌─────────────────────────────────────────────┐
-│               Service Layer                 │
-│  GitService, FileService, AuthService       │
-│  Handles I/O, Git operations, networking    │
-│  Returns domain models; throws on error     │
-└────────────────┬────────────────────────────┘
-                 │
-                 ▼
-┌─────────────────────────────────────────────┐
-│               Model Layer                   │
-│  Repository, Commit, Branch, FileChange     │
-│  Plain Swift structs — no UI dependencies   │
-└─────────────────────────────────────────────┘
+┌──────────────────────────────────────────────────────────┐
+│                       View Layer                         │
+│  SwiftUI Views — DashboardView, RepoDetailView, etc.     │
+│  Purely presentational; reads @Observable state          │
+└────────────────────┬─────────────────────────────────────┘
+                     │ @State private var viewModel = …
+                     ▼
+┌──────────────────────────────────────────────────────────┐
+│                   ViewModel Layer                        │
+│  @Observable classes — DashboardViewModel                │
+│  Validates user input, bridges View ↔ Service            │
+│  Owns or proxies service instances                       │
+└────────────────────┬─────────────────────────────────────┘
+                     │ async/await
+                     ▼
+┌──────────────────────────────────────────────────────────┐
+│                   Service Layer                          │
+│  RepoMonitorService (orchestrator, @Observable)          │
+│  GitCommandRunner · FileWatcherService                   │
+│  NotificationService · QuickActionService                │
+│  RepoScannerService · GlobalHotkeyService                │
+└────────────────────┬─────────────────────────────────────┘
+                     │
+                     ▼
+┌──────────────────────────────────────────────────────────┐
+│                    Model Layer                           │
+│  RepoConfig (@Model/SwiftData) — persisted               │
+│  RepoState (@Observable) — runtime, per repo             │
+│  GitStatus · FileChange · CommitInfo · BranchInfo        │
+│  Plain Swift value types (struct/enum), Sendable         │
+└──────────────────────────────────────────────────────────┘
 ```
 
 ---
 
-## SwiftUI View Hierarchy (Planned)
+## SwiftUI Scene Hierarchy
 
 ```
 oioGitApp (@main)
-└── WindowGroup
-    └── ContentView (root — to be replaced)
-        └── NavigationStack
-            ├── RepositoryListView          # Home: list of local repos
-            │   └── RepositoryRow
-            └── RepositoryDetailView        # Per-repo hub
-                ├── CommitHistoryView       # Log / timeline
-                │   └── CommitDetailView
-                ├── BranchListView          # Branch management
-                ├── ChangesView             # Staging area
-                │   └── FileChangeRow
-                └── RemoteView              # Push / pull / fetch
+├── MenuBarExtra (.window style)          ← menu bar icon
+│   └── DashboardView
+│       ├── DashboardViewModel (@State)
+│       │   └── RepoMonitorService
+│       ├── RepoCardView (×N)
+│       │   └── StatusBadgeView
+│       └── RepoDetailView (pushed on tap)
+│           ├── ChangedFilesView
+│           │   └── MiniDiffView
+│           ├── CommitLogView
+│           └── BranchListView
+└── Settings scene
+    └── SettingsView (TabView)
+        ├── GeneralSettingsView
+        ├── RepoManagerView
+        └── NotificationSettingsView
 ```
 
 ---
 
 ## Data Flow
 
-SwiftUI's unidirectional data flow:
+### Monitoring Loop (background → UI)
 
 ```
-User Action
+FileWatcherService (DispatchSource on .git)
+    │  debounce 1 s
+    ▼
+RepoMonitorService.refreshRepo(state)   @MainActor
+    │  async let parallel git commands
+    ├─ GitCommandRunner.run(["status", "--porcelain"])
+    ├─ GitCommandRunner.run(["branch", "--show-current"])
+    └─ GitCommandRunner.run(["stash", "list"])
     │
     ▼
-View calls ViewModel method
+GitOutputParser (pure, static)
     │
     ▼
-ViewModel calls Service (async/await)
+RepoState properties updated (@MainActor)
     │
     ▼
-Service performs Git operation
-    │
-    ▼
-Service returns Model or throws Error
-    │
-    ▼
-ViewModel updates @Published properties
-    │
-    ▼
-SwiftUI re-renders affected Views
+SwiftUI re-renders DashboardView / RepoCardView
 ```
 
-No bidirectional data binding between Views and Services. Services are stateless where possible.
+### Periodic Remote Fetch (every 5 min)
+
+```
+DispatchSourceTimer (global utility queue)
+    │
+    ▼
+RepoMonitorService.fetchAllRemotes()
+    │  fetchRunner (30 s timeout)
+    ▼
+GitCommandRunner.run(["fetch", "--all", "--quiet"])
+    │
+    ▼
+fetchAheadBehind → rev-list --left-right --count HEAD...@{upstream}
+    │
+    ▼
+RepoState.aheadCount / behindCount
+```
+
+### User Action Flow
+
+```
+User taps action in DashboardView / DashboardViewModel
+    │
+    ▼
+DashboardViewModel validates (duplicate, .git check, limit)
+    │
+    ▼
+SwiftData insert + modelContext.save()   (RepoConfig)
+    │
+    ▼
+RepoMonitorService.addRepo(config)
+    │
+    ├─ FileWatcherService.startWatching(repoId:directory:)
+    └─ refreshRepo(state)
+```
 
 ---
 
-## Git Integration (Pending Decision)
+## Service Design
 
-The Git backend library has not been selected. Candidates:
+### GitCommandRunner
 
-| Option | Pros | Cons |
-|---|---|---|
-| **libgit2** (via SwiftLibgit2 or ObjectiveGit) | Full Git API, battle-tested | C dependency, build complexity |
-| **SwiftGit2** | Swift-native wrapper over libgit2 | Maintenance status uncertain |
-| **Process / Shell** | Simple, no dependency | Security risk, limited API |
-| **Custom Swift Git parser** | Full control | Very high effort |
+Wraps Foundation `Process` API. Runs on a private serial `DispatchQueue`. Timeout via `withThrowingTaskGroup`: races the git task against a `Task.sleep` cancellation task. Two instances: default (5 s timeout) and `fetchRunner` (30 s timeout).
 
-Decision: ADR-002 (pending). Will be resolved before first feature implementation.
+### FileWatcherService
 
----
+`@unchecked Sendable` — all mutable state (`sources`, `debounceItems`) is confined to a private serial queue. Opens the `.git` subdirectory with `O_EVTONLY` and creates a `DispatchSourceFileSystemObject` for `.write` events. On event, debounces the callback by 1 s using a cancellable `DispatchWorkItem`.
 
-## State Management Strategy
+### RepoMonitorService
 
-| Scope | Mechanism |
-|---|---|
-| Local view state (loading, text input) | `@State` |
-| ViewModel binding | `@StateObject` / `@ObservedObject` |
-| App-wide shared state (current user, settings) | `@EnvironmentObject` |
-| Navigation state | `NavigationStack` path binding |
-| Persistent settings | `UserDefaults` via `@AppStorage` |
-| Credentials | Keychain (via Security framework) |
+`@Observable` class that acts as the central orchestrator. Split across two files:
+- `RepoMonitorService.swift` — public API, state, `syncStates`, `deinit`
+- `RepoMonitorService+Refresh.swift` — `refreshRepo`, file watcher setup, fetch timer, wake subscription, notification evaluation
 
-No third-party state management library is planned. SwiftUI's built-in mechanisms are sufficient.
+Notification evaluation is transition-based: stores the previous `Set<String>` of active notification types per repo in `activeNotifications`, only fires on `false→true` transitions, and clears delivered notifications on `true→false`.
+
+### NotificationService
+
+Singleton. Wraps `UNUserNotificationCenter`. Notification identifiers are `"\(repoName).\(type.rawValue)"` — this deduplicates repeated sends. `NotificationType` cases: `conflict`, `behindRemote`, `staleChanges`, `detachedHead`.
+
+### GlobalHotkeyService
+
+Singleton. Registers a global `NSEvent` monitor for `.keyDown` events. Fires callback when `Control+Shift+G` is detected (using `kVK_ANSI_G` from `Carbon.HIToolbox`). Dispatches to main queue.
+
+### AppSettings
+
+`@Observable` singleton backed entirely by `UserDefaults`. `launchAtLogin` read/write delegates to `SMAppService.mainApp.register()` / `.unregister()`.
 
 ---
 
 ## Persistence
 
-| Data Type | Storage |
+| Data | Mechanism |
 |---|---|
-| Cloned repository paths | `UserDefaults` or Core Data (TBD) |
-| User preferences | `UserDefaults` / `@AppStorage` |
-| Credentials (tokens, SSH keys) | Keychain |
-| Repository data (commits, branches) | In-memory (sourced live from Git) |
+| Tracked repository list | SwiftData (`RepoConfig` @Model, SQLite) |
+| Security-scoped access | `bookmarkData: Data?` in `RepoConfig` |
+| User preferences | `UserDefaults` via `AppSettings` |
+| Notification toggles | `UserDefaults` keys (`notify_conflict`, etc.) |
+| Runtime repo state | In-memory `RepoState` objects |
 
 ---
 
-## Security Considerations
+## Security Model
 
-- Credentials stored exclusively in iOS Keychain — never in `UserDefaults` or files
-- No analytics or telemetry in initial versions
-- SSH keys will require Secure Enclave or file-based storage (TBD)
-- App sandbox enforces file access boundaries
-
----
-
-## Module Boundaries
-
-```
-oioGit (main target)
-├── App/           — entry point and app lifecycle
-├── Views/         — all SwiftUI views
-├── ViewModels/    — all ObservableObject ViewModels
-├── Models/        — domain structs (Repository, Commit, Branch, etc.)
-├── Services/      — Git, File, Auth, Network services
-└── Utilities/     — extensions, helpers, shared constants
-```
-
-No separate Swift packages or modules at this stage. Modularity will be introduced when the codebase grows beyond 20 files or when clear reusability emerges.
+- **Sandboxed macOS app** — file access via security-scoped bookmarks
+- `RepoConfig.resolveBookmark()` returns `nil` if bookmark is stale; UI surfaces "re-add repository" error
+- `startAccessingSecurityScopedResource()` / `stopAccessingSecurityScopedResource()` are balanced in every `refreshRepo` and `startWatcher` call
+- No credentials, tokens, or SSH keys are handled — git operations use the user's existing credential helpers
 
 ---
 
-## Deployment Architecture
+## State Management Summary
 
-oioGit is a standalone iOS app with no backend server.
-
-```
-User Device (iPhone / iPad)
-└── oioGit.app
-    ├── Local Git repositories (in app sandbox or Files app)
-    └── Remote Git servers (GitHub, GitLab, Gitea, etc.) via HTTPS/SSH
-```
-
-All Git operations run on-device. Remote operations communicate directly with Git hosting providers using standard Git protocols.
+| Scope | Mechanism |
+|---|---|
+| Runtime repo state | `@Observable RepoState` (updated @MainActor) |
+| Service orchestration | `@Observable RepoMonitorService` |
+| ViewModel | `@Observable DashboardViewModel` (@State in View) |
+| Global settings | `@Observable AppSettings.shared` |
+| Persistent config | SwiftData `@Query` + `ModelContext` |
+| Local view state | `@State` |
+| Cross-view data | `@Environment(\.modelContext)` |
 
 ---
 
-## Current Architecture State
+## Concurrency Model
 
-As of v0.1.0, only the default Xcode template exists:
-
-- `oioGitApp` — `@main` entry point with `WindowGroup { ContentView() }`
-- `ContentView` — placeholder globe + "Hello, world!" view
-
-All architecture described above is **planned**, not implemented.
+- All `RepoState` mutations happen on `@MainActor`
+- `GitCommandRunner` executes `Process` on a private serial `DispatchQueue`; results bridge back via `withCheckedThrowingContinuation`
+- `FileWatcherService` confines all mutable state to its own `DispatchQueue`; uses `@unchecked Sendable`
+- Service singletons (`NotificationService`, `GlobalHotkeyService`) are `final` with immutable state or confined mutation
+- `withTaskGroup` enables parallel git command execution per repo refresh

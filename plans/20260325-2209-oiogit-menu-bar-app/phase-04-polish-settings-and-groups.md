@@ -14,8 +14,8 @@
 - **Date**: 2026-03-25
 - **Description**: Auto-scan parent directories for repos, repo groups/aliases, full settings panel, launch at login (SMAppService), drag-and-drop repo add, sorting, UI animations
 - **Priority**: Medium
-- **Implementation Status**: Not started
-- **Review Status**: Pending
+- **Implementation Status**: Complete
+- **Review Status**: Reviewed & approved (2026-03-26). Note: drag-and-drop not yet implemented (deferred)
 
 ---
 
@@ -122,24 +122,24 @@ User selects parent directory (NSOpenPanel)
 
 ## Todo List
 
-- [ ] Create AppSettings model with @AppStorage
-- [ ] Create RepoGroup SwiftData model
-- [ ] Update RepoConfig with alias/group/hidden fields
-- [ ] Create RepoScannerService
-- [ ] Create SettingsView container
-- [ ] Create GeneralSettingsView with all controls
-- [ ] Implement SMAppService launch at login
-- [ ] Create RepoManagerView
-- [ ] Create NotificationSettingsView
-- [ ] Add Settings scene to app
-- [ ] Add drag-and-drop to dashboard
-- [ ] Add sorting picker
-- [ ] Add group section headers
-- [ ] Add auto-scan directory flow
-- [ ] Add animations for list changes
-- [ ] Test: settings changes apply immediately
-- [ ] Test: drag folder onto dashboard adds repo
-- [ ] Test: auto-scan finds nested repos
+- [x] Create AppSettings model with @AppStorage
+- [x] Create RepoGroup SwiftData model
+- [x] Update RepoConfig with alias/group/hidden fields
+- [x] Create RepoScannerService
+- [x] Create SettingsView container
+- [x] Create GeneralSettingsView with all controls
+- [x] Implement SMAppService launch at login
+- [x] Create RepoManagerView
+- [x] Create NotificationSettingsView
+- [x] Add Settings scene to app
+- [ ] Add drag-and-drop to dashboard (deferred)
+- [x] Add sorting picker
+- [x] Add group section headers
+- [x] Add auto-scan directory flow
+- [x] Add animations for list changes
+- [x] Test: settings changes apply immediately
+- [ ] Test: drag folder onto dashboard adds repo (deferred)
+- [x] Test: auto-scan finds nested repos
 
 ---
 

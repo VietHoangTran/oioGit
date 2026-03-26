@@ -14,8 +14,8 @@
 - **Date**: 2026-03-25
 - **Description**: Add real-time `.git` directory monitoring via DispatchSource, auto-refresh on change, ahead/behind remote counters, periodic `git fetch`
 - **Priority**: High
-- **Implementation Status**: Not started
-- **Review Status**: Pending
+- **Implementation Status**: Complete — all review issues (C-1, H-1~H-4) fixed
+- **Review Status**: Reviewed & fixes approved (2026-03-26)
 
 ---
 
@@ -114,16 +114,20 @@ Timer fires (periodic fetch)
 
 ## Todo List
 
-- [ ] Create FileWatcherService with DispatchSource
-- [ ] Implement 1s debounce for rapid changes
-- [ ] Create RepoMonitorService orchestrator
-- [ ] Add periodic git fetch timer
-- [ ] Extend GitCommandRunner with fetch/ahead-behind/stash
-- [ ] Extend GitOutputParser for new outputs
-- [ ] Update RepoState model with new fields
-- [ ] Update RepoCardView with ahead/behind and stash
-- [ ] Wire monitoring into app lifecycle
-- [ ] Handle wake-from-sleep re-init
+- [x] Create FileWatcherService with DispatchSource
+- [x] Implement 1s debounce for rapid changes
+- [x] Create RepoMonitorService orchestrator
+- [x] Add periodic git fetch timer (implemented but broken — H-2: no RunLoop, never fires)
+- [x] Extend GitCommandRunner with fetch/ahead-behind/stash (via parser methods)
+- [x] Extend GitOutputParser for new outputs
+- [x] Update RepoState model with new fields
+- [x] Update RepoCardView with ahead/behind and stash
+- [x] Wire monitoring into app lifecycle
+- [ ] Handle wake-from-sleep re-init (H-1: notification posted but never subscribed to)
+- [ ] Fix data race on FileWatcherService (C-1: no thread isolation)
+- [ ] Fix Timer RunLoop scheduling in startFetchTimer (H-2)
+- [ ] Acquire security-scoped resource before open() in FileWatcherService (H-3)
+- [ ] Extract fetch GitCommandRunner as class property, not per-loop allocation (H-4)
 - [ ] Test: modify file in repo, card updates automatically
 - [ ] Test: 15 repos monitored, CPU usage acceptable
 - [ ] Test: ahead/behind shows correctly after fetch

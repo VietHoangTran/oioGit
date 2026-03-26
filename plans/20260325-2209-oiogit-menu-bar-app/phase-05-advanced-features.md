@@ -14,8 +14,8 @@
 - **Date**: 2026-03-25
 - **Description**: Global keyboard shortcuts, macOS desktop widgets, GitHub CI/CD status via API, inline mini diff viewer
 - **Priority**: Low (nice-to-have)
-- **Implementation Status**: Not started
-- **Review Status**: Pending
+- **Implementation Status**: Partial — MiniDiffView & GlobalHotkey done; Widget & GitHub CI deferred (YAGNI)
+- **Review Status**: Reviewed & approved (2026-03-26)
 
 ---
 
@@ -128,22 +128,22 @@ WidgetKit timeline provider
 
 ## Todo List
 
-- [ ] Create GlobalHotkeyService with NSEvent monitor
-- [ ] Add hotkey recorder in settings
-- [ ] Create CIStatus model
-- [ ] Create GitHubAPIService with caching
-- [ ] Add GitHub token to Keychain + settings UI
-- [ ] Add CI badge to RepoCardView
-- [ ] Create MiniDiffView with syntax highlighting
-- [ ] Add diff toggle in ChangedFilesView
-- [ ] Create Widget extension target
-- [ ] Set up App Group shared container
-- [ ] Create widget timeline provider
-- [ ] Create widget view (small + medium)
-- [ ] Test: global hotkey toggles popover
-- [ ] Test: CI status fetches and displays correctly
-- [ ] Test: diff view renders for modified files
-- [ ] Test: widget shows current repo status
+- [x] Create GlobalHotkeyService with NSEvent monitor
+- [x] Add hotkey recorder in settings
+- [ ] Create CIStatus model (deferred — YAGNI)
+- [ ] Create GitHubAPIService with caching (deferred — YAGNI)
+- [ ] Add GitHub token to Keychain + settings UI (deferred — YAGNI)
+- [ ] Add CI badge to RepoCardView (deferred — YAGNI)
+- [x] Create MiniDiffView with syntax highlighting
+- [x] Add diff toggle in ChangedFilesView
+- [ ] Create Widget extension target (deferred — YAGNI)
+- [ ] Set up App Group shared container (deferred — YAGNI)
+- [ ] Create widget timeline provider (deferred — YAGNI)
+- [ ] Create widget view (small + medium) (deferred — YAGNI)
+- [x] Test: global hotkey toggles popover
+- [ ] Test: CI status fetches and displays correctly (deferred — YAGNI)
+- [x] Test: diff view renders for modified files
+- [ ] Test: widget shows current repo status (deferred — YAGNI)
 
 ---
 

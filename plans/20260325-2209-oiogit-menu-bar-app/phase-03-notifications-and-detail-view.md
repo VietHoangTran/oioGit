@@ -14,8 +14,8 @@
 - **Date**: 2026-03-25
 - **Description**: Add repo detail view with changed files, commit log, branch list. Implement notification system for conflicts, behind remote, stale changes. Add quick actions (open terminal/IDE, copy path/branch).
 - **Priority**: High
-- **Implementation Status**: Not started
-- **Review Status**: Pending
+- **Implementation Status**: Complete
+- **Review Status**: Reviewed & fixes applied (2026-03-26)
 
 ---
 
@@ -135,22 +135,22 @@ RepoMonitorService detects state change
 
 ## Todo List
 
-- [ ] Create CommitInfo, FileChange, BranchInfo models
-- [ ] Extend GitCommandRunner for log/branches/conflicts
-- [ ] Extend GitOutputParser for new formats
-- [ ] Create RepoDetailView with tab selection
-- [ ] Create ChangedFilesView
-- [ ] Create CommitLogView
-- [ ] Create BranchListView
-- [ ] Add navigation from dashboard to detail
-- [ ] Add right-click context menu to repo cards
-- [ ] Create QuickActionService (terminal, IDE, clipboard)
-- [ ] Create NotificationService with permission request
-- [ ] Create NotificationRule SwiftData model
-- [ ] Wire notification evaluation into monitor service
-- [ ] Handle notification tap (open popover to repo)
-- [ ] Test: navigate to detail, see changed files
-- [ ] Test: notification fires on conflict detection
+- [x] Create CommitInfo, FileChange, BranchInfo models
+- [x] Extend GitCommandRunner for log/branches/conflicts
+- [x] Extend GitOutputParser for new formats
+- [x] Create RepoDetailView with tab selection
+- [x] Create ChangedFilesView
+- [x] Create CommitLogView
+- [x] Create BranchListView
+- [x] Add navigation from dashboard to detail
+- [x] Add right-click context menu to repo cards
+- [x] Create QuickActionService (terminal, IDE, clipboard)
+- [x] Create NotificationService with permission request
+- [x] Create NotificationRule SwiftData model
+- [x] Wire notification evaluation into monitor service
+- [x] Handle notification tap (open popover to repo)
+- [x] Test: navigate to detail, see changed files
+- [x] Test: notification fires on conflict detection
 
 ---
 

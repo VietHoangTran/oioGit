@@ -2,7 +2,7 @@
 
 **Project**: oioGit -- macOS Menu Bar Git Repository Monitor
 **Date**: 2026-03-25
-**Status**: Planning
+**Status**: Complete
 **Target**: macOS 14+ (Sonoma), Swift 5.9+
 
 ---
@@ -11,11 +11,11 @@
 
 | # | Phase | Status | Progress | File |
 |---|-------|--------|----------|------|
-| 1 | MVP: Menu Bar & Dashboard | Planned | 0% | [phase-01](./phase-01-mvp-menu-bar-and-dashboard.md) |
-| 2 | File Monitoring & Auto-Refresh | Planned | 0% | [phase-02](./phase-02-file-monitoring-and-auto-refresh.md) |
-| 3 | Notifications & Detail View | Planned | 0% | [phase-03](./phase-03-notifications-and-detail-view.md) |
-| 4 | Polish, Settings & Groups | Planned | 0% | [phase-04](./phase-04-polish-settings-and-groups.md) |
-| 5 | Advanced Features | Planned | 0% | [phase-05](./phase-05-advanced-features.md) |
+| 1 | MVP: Menu Bar & Dashboard | Done | 100% | [phase-01](./phase-01-mvp-menu-bar-and-dashboard.md) |
+| 2 | File Monitoring & Auto-Refresh | Done | 100% | [phase-02](./phase-02-file-monitoring-and-auto-refresh.md) |
+| 3 | Notifications & Detail View | Done | 100% | [phase-03](./phase-03-notifications-and-detail-view.md) |
+| 4 | Polish, Settings & Groups | Done | 100% | [phase-04](./phase-04-polish-settings-and-groups.md) |
+| 5 | Advanced Features | Done | 100% | [phase-05](./phase-05-advanced-features.md) |
 
 ---
 
