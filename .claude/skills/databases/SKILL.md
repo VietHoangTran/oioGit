@@ -63,7 +63,7 @@ Use when:
 # 3. Get connection string
 
 # Connection
-mongodb+srv://user:pass@cluster.mongodb.net/db
+mongodb
 
 # Shell
 mongosh "mongodb+srv://cluster.mongodb.net/mydb"
