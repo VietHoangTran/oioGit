@@ -1,0 +1,97 @@
+import SwiftUI
+
+struct RepoCardView: View {
+    let repoState: RepoState
+
+    var body: some View {
+        HStack(spacing: 10) {
+            StatusBadgeView(color: repoState.statusColor)
+
+            VStack(alignment: .leading, spacing: 3) {
+                Text(repoState.displayName)
+                    .font(.system(.body, weight: .medium))
+                    .lineLimit(1)
+
+                HStack(spacing: 6) {
+                    branchLabel
+                    statusLabel
+                    aheadBehindLabel
+                    stashLabel
+                }
+            }
+
+            Spacer()
+
+            if repoState.isScanning {
+                ProgressView()
+                    .controlSize(.small)
+            } else if let updated = repoState.lastUpdated {
+                Text(updated, style: .relative)
+                    .font(.caption2)
+                    .foregroundStyle(.secondary)
+            }
+        }
+        .padding(.vertical, 6)
+        .padding(.horizontal, 10)
+        .background(
+            RoundedRectangle(cornerRadius: 8)
+                .fill(.quaternary.opacity(0.5))
+        )
+        .contentShape(Rectangle())
+    }
+
+    private var branchLabel: some View {
+        HStack(spacing: 3) {
+            Image(systemName: SFSymbols.branch)
+                .font(.caption2)
+            Text(repoState.currentBranch)
+                .font(.caption)
+        }
+        .foregroundStyle(.secondary)
+        .lineLimit(1)
+    }
+
+    private var statusLabel: some View {
+        Group {
+            if let error = repoState.errorMessage {
+                Text(error)
+                    .foregroundStyle(.red)
+            } else {
+                Text(repoState.gitStatus.summary)
+                    .foregroundStyle(
+                        repoState.gitStatus.isClean ? .green : .orange
+                    )
+            }
+        }
+        .font(.caption)
+        .lineLimit(1)
+    }
+
+    @ViewBuilder
+    private var aheadBehindLabel: some View {
+        if repoState.aheadCount > 0 || repoState.behindCount > 0 {
+            HStack(spacing: 2) {
+                if repoState.aheadCount > 0 {
+                    Text("↑\(repoState.aheadCount)")
+                }
+                if repoState.behindCount > 0 {
+                    Text("↓\(repoState.behindCount)")
+                }
+            }
+            .font(.caption)
+            .foregroundStyle(.blue)
+        }
+    }
+
+    @ViewBuilder
+    private var stashLabel: some View {
+        if repoState.stashCount > 0 {
+            HStack(spacing: 2) {
+                Image(systemName: SFSymbols.stash)
+                Text("\(repoState.stashCount)")
+            }
+            .font(.caption2)
+            .foregroundStyle(.purple)
+        }
+    }
+}
