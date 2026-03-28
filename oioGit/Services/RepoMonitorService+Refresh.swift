@@ -47,6 +47,7 @@ extension RepoMonitorService {
         }
 
         state.isScanning = false
+        lastRefreshEnd[state.id] = Date()
 
         // Update widget data after each refresh
         SharedDataService.writeSnapshots(repoStates)
@@ -72,9 +73,14 @@ extension RepoMonitorService {
         fileWatcher.startWatching(repoId: repoId, directory: url) { [weak self] in
             guard let self else { return }
             Task { @MainActor in
-                if let s = self.repoStates.first(where: { $0.id == repoId }) {
-                    await self.refreshRepo(s)
+                guard let s = self.repoStates.first(where: { $0.id == repoId }),
+                      !s.isScanning else { return }
+                // Skip if within cooldown — our own git commands triggered this
+                if let lastEnd = self.lastRefreshEnd[repoId],
+                   Date().timeIntervalSince(lastEnd) < self.watcherCooldown {
+                    return
                 }
+                await self.refreshRepo(s)
             }
         }
     }

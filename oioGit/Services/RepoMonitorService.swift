@@ -14,6 +14,9 @@ final class RepoMonitorService {
     let fetchInterval: TimeInterval = 300 // 5 minutes
     /// Track active notification states to only notify on transition
     var activeNotifications: [String: Set<String>] = [:]
+    /// Cooldown timestamps to ignore watcher events triggered by our own git commands
+    var lastRefreshEnd: [String: Date] = [:]
+    let watcherCooldown: TimeInterval = 3
 
     deinit {
         fileWatcher.stopAll()

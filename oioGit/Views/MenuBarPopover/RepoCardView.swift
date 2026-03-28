@@ -38,7 +38,7 @@ struct RepoCardView: View {
                 ProgressView()
                     .controlSize(.small)
             } else if let updated = repoState.lastUpdated {
-                Text(updated, style: .relative)
+                Text(relativeTime(since: updated))
                     .font(.caption2)
                     .foregroundStyle(.secondary)
             }
@@ -106,5 +106,16 @@ struct RepoCardView: View {
             .font(.caption2)
             .foregroundStyle(.purple)
         }
+    }
+
+    private func relativeTime(since date: Date) -> String {
+        let seconds = Int(Date().timeIntervalSince(date))
+        if seconds < 60 { return "now" }
+        let minutes = seconds / 60
+        if minutes < 60 { return "\(minutes)m ago" }
+        let hours = minutes / 60
+        if hours < 24 { return "\(hours)h ago" }
+        let days = hours / 24
+        return "\(days)d ago"
     }
 }
