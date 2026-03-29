@@ -32,15 +32,16 @@ final class GitCommandRunner: Sendable {
         self.timeout = timeout
     }
 
-    func run(_ args: [String], at directory: URL) async throws -> String {
+    func run(_ args: [String], at directory: URL, gitPath override: String? = nil) async throws -> String {
+        let effectivePath = override ?? self.gitPath
         guard FileManager.default.fileExists(atPath: directory.path) else {
             throw GitError.invalidDirectory(directory.path)
         }
-        guard FileManager.default.isExecutableFile(atPath: gitPath) else {
-            throw GitError.notFound(gitPath)
+        guard FileManager.default.isExecutableFile(atPath: effectivePath) else {
+            throw GitError.notFound(effectivePath)
         }
 
-        let gitPath = self.gitPath
+        let gitPath = effectivePath
         let queue = self.queue
 
         return try await withThrowingTaskGroup(of: String.self) { group in

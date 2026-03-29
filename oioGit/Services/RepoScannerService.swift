@@ -3,7 +3,7 @@ import Foundation
 enum RepoScannerService {
 
     /// Scan directory for git repositories up to maxDepth levels deep
-    static func scan(directory: URL, maxDepth: Int = 2) -> [URL] {
+    nonisolated static func scan(directory: URL, maxDepth: Int = 2) -> [URL] {
         let fm = FileManager.default
         var repos: [URL] = []
 
@@ -15,7 +15,7 @@ enum RepoScannerService {
         return repos.sorted { $0.lastPathComponent < $1.lastPathComponent }
     }
 
-    private static func scanRecursive(
+    nonisolated private static func scanRecursive(
         directory: URL, fileManager fm: FileManager,
         currentDepth: Int, maxDepth: Int, results: inout [URL]
     ) {

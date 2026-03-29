@@ -35,7 +35,7 @@ struct HotkeyConfig: Codable, Sendable, Equatable {
     func matches(_ event: NSEvent) -> Bool {
         let flags = NSEvent.ModifierFlags(rawValue: modifierFlags)
         let eventMods = event.modifierFlags.intersection(.deviceIndependentFlagsMask)
-        return eventMods.contains(flags) && event.keyCode == keyCode
+        return eventMods == flags && event.keyCode == keyCode
     }
 
     // MARK: - Key Code Name Lookup

@@ -35,6 +35,11 @@ struct RepoManagerView: View {
     private var bottomBar: some View {
         HStack {
             Button("Scan Directory...") { scanDirectory() }
+                .disabled(isScanning)
+            if isScanning {
+                ProgressView()
+                    .controlSize(.small)
+            }
             Spacer()
             Text("\(repoConfigs.count) repos")
                 .font(.caption)
@@ -52,10 +57,14 @@ struct RepoManagerView: View {
         guard panel.runModal() == .OK, let url = panel.url else { return }
 
         isScanning = true
-        let results = RepoScannerService.scan(directory: url)
-        scanResults = results
-        isScanning = false
-        if !results.isEmpty { showingScanSheet = true }
+        Task.detached(priority: .userInitiated) {
+            let results = RepoScannerService.scan(directory: url)
+            await MainActor.run {
+                self.scanResults = results
+                self.isScanning = false
+                if !results.isEmpty { self.showingScanSheet = true }
+            }
+        }
     }
 
     private func deleteRepos(at offsets: IndexSet) {

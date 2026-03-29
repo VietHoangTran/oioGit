@@ -11,12 +11,16 @@ final class RepoMonitorService {
     let fileWatcher = FileWatcherService()
     var fetchTimerSource: DispatchSourceTimer?
     var wakeObserver: NSObjectProtocol?
-    let fetchInterval: TimeInterval = 300 // 5 minutes
+    var fetchInterval: TimeInterval {
+        AppSettings.shared.pollingInterval
+    }
     /// Track active notification states to only notify on transition
     var activeNotifications: [String: Set<String>] = [:]
     /// Cooldown timestamps to ignore watcher events triggered by our own git commands
     var lastRefreshEnd: [String: Date] = [:]
     let watcherCooldown: TimeInterval = 3
+    /// URLs with active security-scoped access (for file watchers)
+    var activeScopedURLs: [String: URL] = [:]
 
     deinit {
         fileWatcher.stopAll()
@@ -45,6 +49,9 @@ final class RepoMonitorService {
 
     func removeRepo(repoId: String) {
         fileWatcher.stopWatching(repoId: repoId)
+        if let url = activeScopedURLs.removeValue(forKey: repoId) {
+            url.stopAccessingSecurityScopedResource()
+        }
         repoStates.removeAll { $0.id == repoId }
     }
 
@@ -63,6 +70,10 @@ final class RepoMonitorService {
         fileWatcher.stopAll()
         fetchTimerSource?.cancel()
         fetchTimerSource = nil
+        for (_, url) in activeScopedURLs {
+            url.stopAccessingSecurityScopedResource()
+        }
+        activeScopedURLs.removeAll()
     }
 
     // MARK: - Internal

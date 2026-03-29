@@ -12,6 +12,7 @@ enum SharedDataService {
 
         let data = states.map { state in
             WidgetRepoData(
+                repoPath: state.repoConfig.path,
                 repoName: state.displayName,
                 branch: state.currentBranch,
                 changedCount: state.gitStatus.totalChanges,

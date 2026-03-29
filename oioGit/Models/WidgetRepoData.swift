@@ -4,7 +4,8 @@ import Foundation
 /// Kept lightweight — only the fields needed for widget display.
 /// NOTE: This file is duplicated in the widget target to avoid framework overhead.
 struct WidgetRepoData: Codable, Identifiable {
-    var id: String { repoName }
+    let repoPath: String
+    var id: String { repoPath }
     let repoName: String
     let branch: String
     let changedCount: Int
@@ -16,6 +17,7 @@ struct WidgetRepoData: Codable, Identifiable {
     let lastUpdated: Date
 
     static let placeholder = WidgetRepoData(
+        repoPath: "/Users/dev/my-project",
         repoName: "my-project",
         branch: "main",
         changedCount: 3,

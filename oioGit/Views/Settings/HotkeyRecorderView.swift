@@ -22,6 +22,9 @@ struct HotkeyRecorderView: View {
                     .foregroundStyle(.orange)
             }
         }
+        .onDisappear {
+            stopRecording()
+        }
     }
 
     private var hotkeyDisplay: some View {

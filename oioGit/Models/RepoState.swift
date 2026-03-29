@@ -10,6 +10,8 @@ final class RepoState: Identifiable {
     var behindCount: Int
     var stashCount: Int
     var lastUpdated: Date?
+    /// Tracks when uncommitted changes were first detected (for stale notification)
+    var firstDirtyDate: Date?
     var ciStatus: CIStatus
     var isScanning: Bool
     var errorMessage: String?
@@ -24,6 +26,7 @@ final class RepoState: Identifiable {
         self.stashCount = 0
         self.ciStatus = .none
         self.lastUpdated = nil
+        self.firstDirtyDate = nil
         self.isScanning = false
         self.errorMessage = nil
     }
